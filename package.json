@@ -1,6 +1,9 @@
 {
   "name": "singularly",
-  "version": "1.0.0",
+  "version": "1.0.1",
+  "engines" : { 
+    "node" : ">=15.0.0"
+  },
   "description": "An implementation of the interactor pattern",
   "keywords": ["interactor", "organizer", "orchestration"],
   "license": "MIT",
