@@ -13,7 +13,7 @@
   "scripts": {
     "test": "jest --coverage=false",
     "tdd": "jest --watchAll",
-    "cover": "jest --coverage"
+    "cover": "jest --ci --coverage"
   },
   "devDependencies": {
     "jest": "^29.6.2"

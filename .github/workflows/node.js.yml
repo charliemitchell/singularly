@@ -15,6 +15,12 @@ jobs:
       - name: Install
         run: |
           yarn install
+
       - name: Unit Tests
         run: |
-          yarn test
+          yarn cover
+
+      - name: Generating coverage badges
+        uses: jpb06/jest-badges-action@latest
+        with:
+          branches: main
