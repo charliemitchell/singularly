@@ -1,10 +1,10 @@
-name: Generate Badges
+name: Coveralls
 on:
   push:
     branches:
       - main
 jobs:
-  generate-badges:
+  coveralls:
     runs-on: ubuntu-latest
     container: node:18
     steps:
@@ -23,11 +23,6 @@ jobs:
         run: |
           yarn cover
 
-      - name: Generating coverage badges
-        uses: jpb06/jest-badges-action@latest
-
-      - name: Commit badges
-        run: git commit -am "Update badges"
-
-      - name: Push badges branch
-        run: git push origin badges
+      - name: Coveralls GitHub Action
+        uses: coverallsapp/github-action@v2
+      
