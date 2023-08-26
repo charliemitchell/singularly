@@ -1,6 +1,8 @@
 # Singularly
 
-[![Build Status](https://github.com/charliemitchell/singularly/actions/workflows/node.js.yml/badge.svg)](https://github.com/charliemitchell/singularly/.github/workflows/node.js.yml) [![Coverage Status](https://coveralls.io/repos/github/charliemitchell/singularly/badge.svg?branch=main)](https://coveralls.io/github/charliemitchell/singularly?branch=main)
+[![Build Status](https://github.com/charliemitchell/singularly/actions/workflows/node.js.yml/badge.svg)](https://github.com/charliemitchell/singularly/.github/workflows/node.js.yml) [![Coverage Status](https://coveralls.io/repos/github/charliemitchell/singularly/badge.svg?branch=main)](https://coveralls.io/github/charliemitchell/singularly?branch=main) ![npm](https://img.shields.io/npm/v/singularly) ![loc](https://flat-badgen.vercel.app/codeclimate/loc/charliemitchell/singularly) ![issues](https://flat-badgen.vercel.app/codeclimate/issues/charliemitchell/singularly) ![tech-debt](https://flat-badgen.vercel.app/codeclimate/tech-debt/charliemitchell/singularly) ![maintainability](https://flat-badgen.vercel.app/codeclimate/maintainability/charliemitchell/singularly)
+
+
 
 Singularly is an implementation of a the interactor design pattern. An interactor is a simple, single-purpose javascript class. It's functional in nature, prescriptive, clean, and easy to test. 
 
