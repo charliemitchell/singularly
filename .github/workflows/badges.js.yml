@@ -15,9 +15,6 @@ jobs:
       - name: Install
         run: |
           yarn install
-      
-      - name: Create badges branch
-        run: git checkout -b badges
 
       - name: Unit Tests
         run: |
