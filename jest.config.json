@@ -17,6 +17,5 @@
           "statements": 90
       }
   },
-  "coverageReporters": ["json-summary"],
   "verbose": false
 }

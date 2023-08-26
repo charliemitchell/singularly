@@ -17,7 +17,8 @@
   "scripts": {
     "test": "jest --coverage=false",
     "tdd": "jest --watchAll",
-    "cover": "jest --ci --coverage"
+    "cover": "jest --coverage",
+    "coveralls": "jest --coverage && coveralls < coverage/lcov.info"
   },
   "devDependencies": {
     "coveralls": "^3.1.1",
