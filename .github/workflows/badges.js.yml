@@ -1,0 +1,33 @@
+name: Generate Badges
+on:
+  push:
+    branches:
+      - main
+jobs:
+  generate-badges:
+    runs-on: ubuntu-latest
+    container: node:18
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          persist-credentials: false
+      - name: Install
+        run: |
+          yarn install
+      
+      - name: Delete remote badges branch
+        run: git push origin --delete badges
+      
+      - name: Create badges branch
+        run: git checkout -b badges
+
+      - name: Unit Tests
+        run: |
+          yarn cover
+
+      - name: Generating coverage badges
+        uses: jpb06/jest-badges-action@latest
+
+      - name: Push badges branch
+        run: git push origin badges
