@@ -15,12 +15,6 @@ jobs:
       - name: Install
         run: |
           yarn install
-          
-      - name: Add safe directory exception
-        run: git config --global --add safe.directory /__w/singularly/singularly
-
-      - name: Delete remote badges branch
-        run: git push origin --delete badges
       
       - name: Create badges branch
         run: git checkout -b badges
@@ -31,6 +25,9 @@ jobs:
 
       - name: Generating coverage badges
         uses: jpb06/jest-badges-action@latest
+
+      - name: Commit badges
+        run: git commit -am "Update badges"
 
       - name: Push badges branch
         run: git push origin badges
