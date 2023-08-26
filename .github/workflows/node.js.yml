@@ -19,3 +19,6 @@ jobs:
       - name: Unit Tests
         run: |
           yarn cover
+
+      - name: Coveralls GitHub Action
+        uses: coverallsapp/github-action@v2
