@@ -1,0 +1,18 @@
+{
+  "name": "singularly",
+  "version": "1.0.0",
+  "description": "An implementation of the interactor pattern",
+  "keywords": ["interactor", "organizer", "orchestration"],
+  "license": "MIT",
+  "repository": {
+    "url": "https://github.com/charliemitchell/singularly.git"
+  },
+  "scripts": {
+    "test": "jest --coverage=false",
+    "tdd": "jest --watchAll",
+    "cover": "jest --coverage"
+  },
+  "devDependencies": {
+    "jest": "^29.6.2"
+  }
+}
