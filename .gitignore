@@ -11,3 +11,5 @@ coverage
 
 # Benchmarking
 benchmarks/graphs
+
+.DS_Store
