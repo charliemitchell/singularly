@@ -15,7 +15,10 @@ jobs:
       - name: Install
         run: |
           yarn install
-      
+          
+      - name: Add safe directory exception
+        run: git config --global --add safe.directory /__w/singularly/singularly
+
       - name: Delete remote badges branch
         run: git push origin --delete badges
       
