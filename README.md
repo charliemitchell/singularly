@@ -6,7 +6,7 @@
 
 
 
-Singularly is an implementation of a the interactor design pattern. An interactor is a simple, single-purpose javascript class. It's functional in nature, prescriptive, clean, and easy to test. 
+Singularly is an implementation of the interactor design pattern. An interactor is a simple, single-purpose javascript class. It's functional in nature, prescriptive, clean, and easy to test. 
 
 Interactors are meant to encapsulate your application's business logic. Each interactor
 represents one thing that your application *does*.
