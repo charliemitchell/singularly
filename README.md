@@ -51,7 +51,7 @@ These are less ideal ways to fail an interactor.
 ```js
 // This isn't really useful, and has no structure
 this.context.fail()
-// This can be confusing because errors have structure
+// This can be confusing because errors should have structure
 this.context.fail("Refusing to continue")
 ```
 
@@ -64,7 +64,7 @@ context.success // false
 context.error // the argument to context.fail
 ```
 
-When you don't call `this.context.fail` then this will automatically mark the context as a success
+When you don't call `this.context.fail` then this will automatically mark the context as a success unless an exception has occurred
 
 ```js
 const context = await SuccessfulOrganizer.call()
@@ -77,7 +77,7 @@ context.error // undefined
 
 `this.context.fail` always throws an error of type `FailedContextError`.
 
-Normally, however, these exceptions are not seen because the `call` method on the organizer swallows exceptions. 
+Normally, however, these exceptions are not seen because the `call` method swallows exceptions.
 
 In the recommended usage, the invoking code (maybe a controller) invokes the interactor using the class method `call`, then checks the `success` value of the context.
 
@@ -101,6 +101,25 @@ try {
 
 ### Hooks
 Hooks apply to both interactors and organizers
+
+Interactors access the context via `this.context`. Organizers access the context via the method argument.
+*You should only extend from Organizer to define hooks.*
+
+```js
+class MyInteractor extends Interactor {
+  before () {
+    this.context.emails_sent = 0
+  }
+
+  call () {}
+}
+
+class MyOrganizer extends Organizer {
+  before (context) {
+    context.emails_sent = 0;
+  }
+}
+```
 
 #### Before Hook
 
@@ -137,7 +156,7 @@ skip () {
 
 1: skip
 2: before
-3: call
+3: call (Do not define `call` when creating a new Organizer)
 4: after
 
 ### An Example Interactor
@@ -145,7 +164,7 @@ skip () {
 Your application could use an interactor to authenticate a user.
 
 ```js
-class AuthenticateUser
+class AuthenticateUser extends Interactor {
   async call () {
     if (await this.authenticate()) {
       this.context.token = this.context.user.secret_token
@@ -162,14 +181,14 @@ class AuthenticateUser
 }
 ```
 
-To define an interactor, simply create a class a `call` instance method. The interactor can access its `context` from within `call`.
+To define an interactor, simply create a class that extends Interactor and a `call` instance method. The interactor can access its `context` from within `call`.
 
 ## Interactors in a Controller
 
 Most of the time, your application might use its interactors from controllers. The following controller:
 
 ```js
-class SessionsController
+class SessionsController {
   constructor(req, res) {
     this.req = req
     this.res = res
@@ -229,10 +248,10 @@ interactors and organizers.
 
 ### Interactors
 
-A basic interactor is a class that simply defines `call`.
+A basic interactor is a class that extends from Interactor and defines `call`.
 
 ```js
-class UploadFile
+class UploadFile extends Interactor {
   async call () {
     this.context.uploadedFile = await new FileUploader(this.context.file).upload()
   }
@@ -242,13 +261,24 @@ class UploadFile
 Basic interactors are the building blocks. They are your application's
 single-purpose units of work.
 
+Interactors can be organized or called directly
+```js
+// Call upload file directly
+const uploadFile = new UploadFile(initialContext)
+await uploadFile.call();
+```
+```js
+// Organize Upload File
+const organizer = new Organizer(UploadFile, /* maybe some other interactors too */)
+await organizer.call(initialContext);
+```
+
 ### Organizers
 
-An organizer is an important variation on the basic interactor. Its single
-purpose is to run *other* interactors or organizers.
+An organizer's single purpose is to run *other* interactors or organizers.
 
 ```js
-import { Organizer } from "interactor-organizer-js"
+import { Organizer } from "singularly"
 
 export default new Organizer(CreateOrder, ChargeCard, SendThankYou)
 ```
@@ -274,7 +304,7 @@ themselves, in reverse order. Simply define the `rollback` method on your
 interactors:
 
 ```js
-class CreateOrder {
+class CreateOrder extends Interactor {
    call () {
     context.order = Order.create(params)
    }
@@ -294,7 +324,7 @@ after any failed interactor.
 When written correctly, an interactor is easy to test because it only *does* one thing. Take the following interactor:
 
 ```js
-class AuthenticateUser {
+class AuthenticateUser extends Interactor {
   call () {
     if (user = User.authenticate(username, password)) {
       context.user = user
@@ -310,9 +340,6 @@ You can test just this interactor's single purpose and how it affects the
 context.
 
 ```js
-import { Organizer } from "interactor-organizer-js"
-const organizer = new Organizer(AuthenticateUser)
-
 describe("AuthenticateUser" () => {
   describe("call", () => {
     describe("when given valid credentials", () => {
@@ -321,17 +348,17 @@ describe("AuthenticateUser" () => {
       * for brevity, assume that you stubbed User.authenticate to return a valid user
       */
       test("it succeeds", async () => {
-        const context = await organizer.call()
+        const context = await (new AuthenticateUser(validCredentialsContext)).call()
         expect(context.success).toBe(true)
       })
 
       test("provides the user", async () => {
-        const context = await organizer.call()
+        const context = await (new AuthenticateUser(validCredentialsContext)).call()
         expect(context.user).toBeTruthy()
       })
 
       test("provides the user's secret token", async () => {
-        const context = await organizer.call()
+        const context = await (new AuthenticateUser(validCredentialsContext)).call()
         expect(context.token).toBe("token")
       })
     })
@@ -342,12 +369,12 @@ describe("AuthenticateUser" () => {
       * for brevity, assume that you stubbed User.authenticate to return null
       */
       test("it fails", async () => {
-        const context = await organizer.call()
+        const context = await (new AuthenticateUser(invalidCredentialsContext)).call()
         expect(context.failure).toBe(true)
       })
 
       test("provides a failure message", async () => {
-        const context = await organizer.call()
+        const context = await (new AuthenticateUser(invalidCredentialsContext)).call()
         expect(context.error.message).toBe("AuthenticateUser.failure")
       })
     })
@@ -371,7 +398,7 @@ which to the model. The `User.authenticate` method is a good, clear line.
 Imagine the interactor otherwise:
 
 ```js
-class AuthenticateUser {
+class AuthenticateUser extends interactor {
   call () {
     const user = User.findBy({ email: this.context.email })
     // Yuck! 🤢
