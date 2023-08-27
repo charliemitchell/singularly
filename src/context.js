@@ -1,7 +1,7 @@
 const { FailedContextError, RollbackError } = require("./errors")
-const { called, rollback } = require("./symbols")
+const { called, rollback, fail } = require("./symbols")
 
-module.exports = class Context {
+class Context {
   constructor (context) {
     Object.assign(this, context)
   }
@@ -11,10 +11,14 @@ module.exports = class Context {
   }
 
   fail (error) {
+    this[fail](error)
+    throw new FailedContextError(error)
+  }
+
+  [fail] (error) {
     this.failure = true;
     this.success = false;
     this.error = error;
-    throw new FailedContextError(error)
   }
 
   async [rollback] () {
@@ -24,7 +28,7 @@ module.exports = class Context {
         try {
           await instance.rollback()
         } catch (err) {
-          throw new RollbackError(err)
+          this[fail](new AggregateError([this.error, err], "RollbackError"))
         }
       }
     }
@@ -33,4 +37,14 @@ module.exports = class Context {
   #called = [];
   failure = false;
   success = false;
+}
+
+module.exports.Context = Context;
+
+module.exports.createContext = function (context = {}) {
+  if (context instanceof Context) {
+    return  context;
+  } else {
+    return new Context(context);
+  }
 }

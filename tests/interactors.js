@@ -1,18 +1,18 @@
-const { Organizer, createInteractor } = require("../index");
+const { Organizer, Interactor, createInteractor } = require("../index");
 
-module.exports.SetsAValue = class SetsAValue {
+module.exports.SetsAValue = class SetsAValue extends Interactor {
   async call () {
     this.context.value = true;
   }
 }
 
-module.exports.HasException = class HasException {
+module.exports.HasException = class HasException extends Interactor {
   async call () {
     throw new Error("ohno")
   }
 }
 
-class AllHooks {
+class AllHooks extends Interactor {
   before() {
     this.context.before = true
   }
@@ -25,7 +25,7 @@ class AllHooks {
   }
 }
 
-module.exports.UploadFile = class UploadFile {
+module.exports.UploadFile = class UploadFile extends Interactor {
   async call() {
     this.context.file = "tmp/some-file.ext";
     return Promise.resolve();
@@ -36,7 +36,7 @@ module.exports.ProcessFile = createInteractor(async function () {
   this.context.processedFile = "tmp/processed-file.ext";
 });
 
-class ValidateUser {
+class ValidateUser extends Interactor  {
   before () {
     if (!this.context.userParams) {
       this.context.fail(Error("context.userParams are required"))
@@ -48,13 +48,13 @@ class ValidateUser {
   }
 }
 
-class CreateUser {
+class CreateUser extends Interactor  {
   call () {
     this.context.user = { name: this.context.userParams.name }
   }
 }
 
-class SignInUser {
+class SignInUser extends Interactor  {
   before () {
     if (!this.context.user) {
       context.fail(new Error("context.user is required"))
@@ -71,7 +71,7 @@ class SignInUser {
   }
 }
 
-class CreateWelcomeEmail {
+class CreateWelcomeEmail extends Interactor  {
   before () {
     this.context.emails = []
   }
@@ -81,7 +81,7 @@ class CreateWelcomeEmail {
   }
 }
 
-class SendCommunications {
+class SendCommunications extends Interactor {
   skip () {
     return !this.context.emails || this.context.emails.length === 0
   }
@@ -93,8 +93,8 @@ class SendCommunications {
 
 
 class CreateAccountOrganizer extends Organizer {
-  skip () {
-    return !this.context.validUser
+  skip (context) {
+    return !context.validUser
   }
 }
 

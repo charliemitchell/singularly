@@ -58,8 +58,8 @@ test("Failing a context from within an interactor", async () => {
 
 test("Failing a context from within an organizer", async () => {
   class Failable extends Organizer {
-    before() {
-      this.context.fail("oops");
+    before(context) {
+      context.fail("oops");
     }
   }
 
@@ -80,14 +80,14 @@ test("Interactor Hooks", async () => {
 
 test("Organizer Hooks", async () => {
   class Hooks extends Organizer {
-    skip() {
-      this.context.skip = true;
+    skip(context) {
+      context.skip = true;
     }
-    before() {
-      this.context.before = true;
+    before(context) {
+      context.before = true;
     }
-    after() {
-      this.context.after = true;
+    after(context) {
+      context.after = true;
     }
   }
   const organizer = new Hooks(UploadFile);
@@ -105,7 +105,7 @@ test("An exception stops execution, and fails the context", async () => {
 });
 
 test("the value of `this` is that of the interactor", async () => {
-  class MyInteractor {
+  class MyInteractor extends Interactor {
     call() {
       this.setValue();
     }
@@ -122,175 +122,9 @@ test("the value of `this` is that of the interactor", async () => {
   expect(ctx.value).toBe(true);
 });
 
-test("constructWith", async () => {
-  class MyInteractor {
-    constructor(value1, value2) {
-      this.value1 = value1;
-      this.value2 = value2;
-    }
-
-    call() {
-      this.setValues();
-    }
-
-    setValues() {
-      this.context.value1 = this.value1;
-      this.context.value2 = this.value2;
-    }
-  }
-
-  const organizer = new Organizer(MyInteractor);
-  var ctx = await organizer.call({}, { constructWith: [true, "value2"] });
-  expect(ctx.error).toBe(undefined);
-  expect(ctx.failure).toBe(false);
-  expect(ctx.value1).toBe(true);
-  expect(ctx.value2).toBe("value2");
-});
-
-test("constructWith and passOptionsToEmbeddedOrganizers = true", async () => {
-  class MyInteractor {
-    constructor(value1, value2) {
-      this.value1 = value1;
-      this.value2 = value2;
-    }
-
-    call() {
-      this.setValues();
-    }
-
-    setValues() {
-      this.context.value1 = this.value1;
-      this.context.value2 = this.value2;
-    }
-  }
-
-  class MyOtherInteractor {
-    constructor(value1, value2) {
-      this.value1 = value1;
-      this.value2 = value2;
-    }
-
-    call() {
-      this.setValues();
-    }
-
-    setValues() {
-      this.context.value3 = this.value1;
-      this.context.value4 = this.value2;
-    }
-  }
-
-  const organizer = new Organizer(
-    MyInteractor,
-    new Organizer(MyOtherInteractor)
-  );
-  var ctx = await organizer.call(
-    {},
-    { constructWith: [true, "value2"], passOptionsToEmbeddedOrganizers: true }
-  );
-  expect(ctx.error).toBe(undefined);
-  expect(ctx.failure).toBe(false);
-  expect(ctx.value1).toBe(true);
-  expect(ctx.value2).toBe("value2");
-  expect(ctx.value3).toBe(true);
-  expect(ctx.value4).toBe("value2");
-});
-
-test("constructWith and passOptionsToEmbeddedOrganizers = false", async () => {
-  class MyInteractor {
-    constructor(value1, value2) {
-      this.value1 = value1;
-      this.value2 = value2;
-    }
-
-    call() {
-      this.setValues();
-    }
-
-    setValues() {
-      this.context.value1 = this.value1;
-      this.context.value2 = this.value2;
-    }
-  }
-
-  class MyOtherInteractor {
-    constructor(...args) {
-      if (args.length) throw "nope";
-    }
-
-    call() {
-      this.setValues();
-    }
-
-    setValues() {
-      this.context.value3 = this.value1;
-      this.context.value4 = this.value2;
-    }
-  }
-
-  const organizer = new Organizer(
-    MyInteractor,
-    new Organizer(MyOtherInteractor)
-  );
-  var ctx = await organizer.call(
-    {},
-    { constructWith: [true, "value2"], passOptionsToEmbeddedOrganizers: false }
-  );
-  expect(ctx.error).toBe(undefined);
-  expect(ctx.failure).toBe(false);
-  expect(ctx.value1).toBe(true);
-  expect(ctx.value2).toBe("value2");
-  expect(ctx.value3).toBe(undefined);
-  expect(ctx.value4).toBe(undefined);
-});
-
-test("constructWith and passOptionsToEmbeddedOrganizers = undefined", async () => {
-  class MyInteractor {
-    constructor(value1, value2) {
-      this.value1 = value1;
-      this.value2 = value2;
-    }
-
-    call() {
-      this.setValues();
-    }
-
-    setValues() {
-      this.context.value1 = this.value1;
-      this.context.value2 = this.value2;
-    }
-  }
-
-  class MyOtherInteractor {
-    constructor(...args) {
-      if (args.length) throw "nope";
-    }
-
-    call() {
-      this.setValues();
-    }
-
-    setValues() {
-      this.context.value3 = this.value1;
-      this.context.value4 = this.value2;
-    }
-  }
-
-  const organizer = new Organizer(
-    MyInteractor,
-    new Organizer(MyOtherInteractor)
-  );
-  var ctx = await organizer.call({}, { constructWith: [true, "value2"] });
-  expect(ctx.error).toBe(undefined);
-  expect(ctx.failure).toBe(false);
-  expect(ctx.value1).toBe(true);
-  expect(ctx.value2).toBe("value2");
-  expect(ctx.value3).toBe(undefined);
-  expect(ctx.value4).toBe(undefined);
-});
 
 test("Interactors and Organizers can be rolled back", async () => {
-  class A {
+  class A extends Interactor {
     call() {
       this.context.a = true;
       if (this.context.stop === "a") this.context.fail("a");
@@ -301,7 +135,7 @@ test("Interactors and Organizers can be rolled back", async () => {
     }
   }
 
-  class B {
+  class B extends Interactor {
     call() {
       this.context.b = true;
       if (this.context.stop === "b") this.context.fail("b");
@@ -312,7 +146,7 @@ test("Interactors and Organizers can be rolled back", async () => {
     }
   }
 
-  class C {
+  class C extends Interactor {
     call() {
       this.context.c = true;
       if (this.context.stop === "c") this.context.fail("c");
@@ -323,7 +157,7 @@ test("Interactors and Organizers can be rolled back", async () => {
     }
   }
 
-  class D {
+  class D extends Interactor {
     call() {
       this.context.d = true;
       if (this.context.stop === "d") this.context.fail("d");
@@ -336,7 +170,7 @@ test("Interactors and Organizers can be rolled back", async () => {
     }
   }
 
-  class F {
+  class F extends Interactor {
     call() {
       this.context.f = true;
       if (this.context.stop === "f") this.context.fail("f");
@@ -382,7 +216,7 @@ test("Interactors and Organizers can be rolled back", async () => {
   ctx = await organizer.call({ stop: "f", rollbacks: ["a", "f"] });
   expect(ctx.error.message).toBe("RollbackError");
   expect(ctx.error.errors.length).toBe(2);
-  expect(ctx.a).toBe(true);
+  expect(ctx.a).toBe(undefined);
   expect(ctx.b).toBe(true);
   expect(ctx.c).toBe(true);
   expect(ctx.d).toBe(true);
